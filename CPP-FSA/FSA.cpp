@@ -19,21 +19,25 @@ void FSA<StateT, AlphaT>::addTransition(const StateT& q, const AlphaT& a, const 
 }
 
 template<typename StateT, typename AlphaT>
-StateT* FSA<StateT, AlphaT>::step(const StateT & q, std::list<AlphaT>& word) const
+StateT* FSA<StateT, AlphaT>::step(const StateT & q, std::list<AlphaT>& word)
 {
 	if (word.empty()) return NULL;
-	auto possible = transitions[std::make_pair(q, word.front())];
+	std::unordered_set<StateT> possible = transitions[std::make_pair(q, word.front())];
 	if (possible.empty()) return NULL;
 	word.pop_front();
-	return possible.begin();
+	//StateT* res = new StateT(*((StateT*)*(possible.begin())));
+	StateT* res = new StateT(*(possible.begin()));
+	return res;
+	//return ((StateT*)*(possible.begin()));
 }
 
 template<typename StateT, typename AlphaT>
-bool FSA<StateT, AlphaT>::inLanguage(std::list<AlphaT>& word) const
+bool FSA<StateT, AlphaT>::inLanguage(std::list<AlphaT>& word)
 {
-	StateT current = start;
-	StateT* next;
+	StateT current;
+	StateT* next = &start;
 	do {
+		current = *next;
 		if (word.empty() && final.find(current) != final.end()) return true;
 		next = step(current, word);
 	} while (next);
