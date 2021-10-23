@@ -24,11 +24,11 @@ StateT* FSA<StateT, AlphaT>::step(const StateT & q, std::list<AlphaT>& word) con
 	if (word.empty()) return NULL;
 	auto possibleIter = transitions.find(std::make_pair(q, word.front()));
 	if (possibleIter == transitions.end()) return NULL;
-	std::unordered_set<StateT> possible = (*(possibleIter)).second;
+	std::unordered_set<StateT> possible = possibleIter->second;
 	
 	//if (possible.empty()) return NULL;
 	word.pop_front();
-	StateT* res = new StateT(possible.begin());
+	StateT* res = &(possible->second);
 	return res;
 }
 
