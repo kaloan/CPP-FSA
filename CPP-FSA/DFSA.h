@@ -5,26 +5,13 @@
 #include <utility>
 #include "Hashes.h"
 
-/*template<typename T>
-class Set : public std::unordered_set<T> {
-
-};*/
-/*class Set : public std::unordered_map<T, bool> {
-public:
-	void add(T val) {
-		insert({ val, true });
-	}
-	auto pick() {
-		return this->begin();
-	}
-};*/
 
 template<typename StateT, typename AlphaT>
-class FSA 
+class DFSA
 {
 private:
 	StateT start;
-	std::unordered_map<std::pair<StateT, AlphaT>, std::unordered_set<StateT>, hash_pair<StateT, AlphaT>> transitions;
+	std::unordered_map<std::pair<StateT, AlphaT>, StateT, hash_pair<StateT, AlphaT>> transitions;
 	std::unordered_set<StateT> final;
 public:
 	void setStart(const StateT&);
