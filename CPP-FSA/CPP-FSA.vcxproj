@@ -119,10 +119,12 @@
     <ClCompile Include="DFSA.h" />
     <ClCompile Include="FSA.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PDA.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FSA.h" />
     <ClInclude Include="Hashes.h" />
+    <ClInclude Include="PDA.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

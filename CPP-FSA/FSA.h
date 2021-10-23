@@ -5,20 +5,6 @@
 #include <utility>
 #include "Hashes.h"
 
-/*template<typename T>
-class Set : public std::unordered_set<T> {
-
-};*/
-/*class Set : public std::unordered_map<T, bool> {
-public:
-	void add(T val) {
-		insert({ val, true });
-	}
-	auto pick() {
-		return this->begin();
-	}
-};*/
-
 template<typename StateT, typename AlphaT>
 class FSA 
 {
@@ -30,6 +16,6 @@ public:
 	void setStart(const StateT&);
 	void addFinal(const StateT&);
 	void addTransition(const StateT& q, const AlphaT& a, const StateT& w);
-	StateT* step(const StateT&, std::list<AlphaT>&);
-	bool inLanguage(std::list<AlphaT>&);
+	StateT* step(const StateT&, std::list<AlphaT>&) const;
+	bool inLanguage(std::list<AlphaT>&) const;
 };

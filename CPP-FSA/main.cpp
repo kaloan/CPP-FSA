@@ -1,5 +1,6 @@
 #include "FSA.cpp"
 #include "DFSA.cpp"
+#include "PDA.cpp"
 #include <iostream>
 
 using namespace std;
@@ -20,5 +21,7 @@ int main() {
 	Dautomaton.addTransition(3, 'b', 2);
 	word = { 'a', 'b' };
 	cout << Dautomaton.inLanguage(word) << endl;
+
+	PDA<unsigned int, char, char> pushdown;
 	return 0;
 }
