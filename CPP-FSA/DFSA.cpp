@@ -1,12 +1,18 @@
 #include "DFSA.h"
 
 template<typename StateT, typename AlphaT>
-StateT * DFSA<StateT, AlphaT>::findImage(const StateT &q, const AlphaT &a)
+StateT * DFSA<StateT, AlphaT>::findImage(const StateT &q, const AlphaT &a) const
 {
 	auto possible = transitions.find(std::make_pair(q, a));
 	if (possible == transitions.end()) return NULL;
 	StateT* res = &(possible->second);
 	return res;
+}
+
+template<typename StateT, typename AlphaT>
+bool DFSA<StateT, AlphaT>::isFinal(const StateT &q) const
+{
+	return final.find(q) == final.end();
 }
 
 template<typename StateT, typename AlphaT>
@@ -26,6 +32,7 @@ template <typename StateT, typename AlphaT>
 void DFSA<StateT, AlphaT>::addTransition(const StateT& q, const AlphaT& a, const StateT& w) {
 	transitions[std::make_pair(q, a)] = w;
 	states.insert(q);
+	alphabet.insert(a);
 }
 
 template<typename StateT, typename AlphaT>
@@ -54,28 +61,74 @@ bool DFSA<StateT, AlphaT>::inLanguage(std::list<AlphaT>& word) const
 template<typename StateT, typename AlphaT>
 DFSA<int, AlphaT> DFSA<StateT, AlphaT>::minimize()
 {
-	std::list<std::pair<std::unordered_set<StateT>, bool>> currentEquivalentStates;
-	std::unordered_set<StateT> nonFinal;
+	// If one of the lists in the list starts with a final state,
+	// then it will be final in the minimized automata
+	std::list<std::list<StateT>> currentEquivalentStates;
+	
+	std::list<StateT> nonFinal;
+	std::list<StateT> finalEquiv;
 	for (auto state& : states)
 	{
-		if (final.find(state) == final.end()) nonFinal.insert(state);
+		if (isFinal(state)) finalEquiv.push_front(state);
+		else nonFinal.push_back(state);
 	}
-	currentEquivalentStates.push_back(std::make_pair(final, true));
-	currentEquivalentStates.push_back(std::make_pair(nonFinal, false));
+	currentEquivalentStates.push_back(finalEquiv);
+	currentEquivalentStates.push_back(nonFinal);
+
 	bool change = true;
 	while (change)
 	{
-		for (int i = 1; i <= list.size(); ++i)
+		change = false;
+
+		for (int i = 1; i <= currentEquivalentStates.size(); ++i)
 		{
-			eqivalentClass = currentEquivalentStates.front();
-			currentEquivalentStates.pop_front();
-			std::list<std::pair<std::unordered_set<StateT>, bool>> newEquivalentClasses;
+			// At the start the only equivalent class emerging from 
+			// the current one will be itself
+			std::list<std::list<StateT>> newEquivalentClasses;
+			newEquivalentClasses.push_back(currentEquivalentStates.front());
+
+			// For each letter find the image of the states in one of the classes
+			// Different images would mean the states should be in different classes
+			for (auto const& a : alphabet)
+			{
+				std::list<std::list<StateT>> tempClasses;
+
+				for (auto const& equivalentClass : newEquivalentClasses)
+				{
+					std::unordered_map<StateT, std::list<StateT>> images;
+					for (auto const& state : equivalentClass)
+					{
+						std::list<StateT>& toPush = images[findImage(state, a)];
+						if (isFinal(state)) toPush.push_front(state);
+						else toPush.push_back(state);
+					}
+
+					for (auto const& imageListPair : images)
+					{
+						tempClasses.push_back(imageListPair.second);
+					}
+				}
+
+				newEquivalentClasses = std::move(tempClasses);
+			}
+
+			// If only one "new" equivalent class was created it is the old equivalent class 
+			// and will be equivalent forever
+			if (newEquivalentClasses.size() > 1) change = true;
+			else continue;
+
+			// ??? CHANGE!
+			for (auto const& newClass : eqivalentClass)
+			{
+				currentEquivalentStates.push_back(newClass);
+			}
+
 
 			currentEquivalentStates.insert(currentEquivalentStates.end(), 
-				myvector.begin(), myvector.end());
+				newEquivalentClasses.begin(), newEquivalentClasses.end());
+			currentEquivalentStates.pop_front();
 		}
-
-		change = false;
 	}
+
 	return DFSA<int, AlphaT>();
 }
