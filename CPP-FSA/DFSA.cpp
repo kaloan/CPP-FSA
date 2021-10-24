@@ -5,7 +5,8 @@ const StateT * DFSA<StateT, AlphaT>::findImage(const StateT &q, const AlphaT &a)
 {
 	auto possible = transitions.find(std::make_pair(q, a));
 	if (possible == transitions.end()) return nullptr;
-	const StateT* res = &(possible->second);
+	//const StateT* res = &(possible->second);
+	const StateT* res = &(*(states.find(possible->second)));
 	return res;
 }
 
