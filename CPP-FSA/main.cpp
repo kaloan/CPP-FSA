@@ -22,6 +22,10 @@ int main() {
 	word = { 'a', 'b' };
 	cout << Dautomaton.inLanguage(word) << endl;
 
+	auto minimizedDA = Dautomaton.minimize();
+	word = { 'a', 'b' };
+	cout << minimizedDA.inLanguage(word) << endl;
+
 	PDA<unsigned int, char, char> pushdown;
 	return 0;
 }

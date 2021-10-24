@@ -12,10 +12,13 @@ private:
 	StateT start;
 	std::unordered_map<std::pair<StateT, AlphaT>, std::unordered_set<StateT>, hash_pair<StateT, AlphaT>> transitions;
 	std::unordered_set<StateT> final;
+
+	const StateT* findImage(const StateT&, const AlphaT&) const;
+
 public:
 	void setStart(const StateT&);
 	void addFinal(const StateT&);
 	void addTransition(const StateT& q, const AlphaT& a, const StateT& w);
-	StateT* step(const StateT&, std::list<AlphaT>&) const;
+	const StateT* step(const StateT&, std::list<AlphaT>&) const;
 	bool inLanguage(std::list<AlphaT>&) const;
 };

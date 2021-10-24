@@ -18,7 +18,7 @@ private:
 	
 
 
-	StateT* findImage(const StateT&, const AlphaT&) const;
+	const StateT* findImage(const StateT&, const AlphaT&) const;
 	bool isFinal(const StateT&) const;
 
 public:
@@ -26,8 +26,8 @@ public:
 	void addFinal(const StateT&);
 	void addTransition(const StateT& q, const AlphaT& a, const StateT& w);
 	
-	StateT* step(const StateT&, std::list<AlphaT>&) const;
+	const StateT* step(const StateT&, std::list<AlphaT>&) const;
 	bool inLanguage(std::list<AlphaT>&) const;
 	
-	DFSA<int, AlphaT> minimize();
+	DFSA<size_t, AlphaT> minimize() const;
 };
