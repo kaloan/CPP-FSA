@@ -10,6 +10,12 @@ const StateT * FSA<StateT, AlphaT>::findImage(const StateT &q, const AlphaT &a) 
 }
 
 template<typename StateT, typename AlphaT>
+bool FSA<StateT, AlphaT>::isFinal(const StateT &q) const
+{
+	return !(final.find(q) == final.end());
+}
+
+template<typename StateT, typename AlphaT>
 void FSA<StateT, AlphaT>::setStart(const StateT &start)
 {
 	this->start = start;

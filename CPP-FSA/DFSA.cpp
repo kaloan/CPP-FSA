@@ -12,7 +12,7 @@ const StateT * DFSA<StateT, AlphaT>::findImage(const StateT &q, const AlphaT &a)
 template<typename StateT, typename AlphaT>
 bool DFSA<StateT, AlphaT>::isFinal(const StateT &q) const
 {
-	return final.find(q) == final.end();
+	return !(final.find(q) == final.end());
 }
 
 template<typename StateT, typename AlphaT>
@@ -114,12 +114,7 @@ DFSA<size_t, AlphaT> DFSA<StateT, AlphaT>::minimize() const
 
 			// If only one "new" equivalent class was created it is the old equivalent class 
 			// and will be equivalent forever
-			if (newEquivalentClasses.size() == 1) {
-				++i;
-				continue;
-			}
-			
-			change = true;
+			if (newEquivalentClasses.size() > 1) change = true;
 
 			currentEquivalentStates.insert(currentEquivalentStates.end(), 
 				newEquivalentClasses.begin(), newEquivalentClasses.end());
@@ -132,7 +127,7 @@ DFSA<size_t, AlphaT> DFSA<StateT, AlphaT>::minimize() const
 	DFSA<size_t, AlphaT> res;
 
 	// Map states of the old automata to states of the minimized automata
-	std::unordered_map<const StateT*, size_t> oldToNew;
+	/*std::unordered_map<const StateT*, size_t> oldToNew;
 	size_t newState = 1;
 	oldToNew.insert(std::make_pair(nullptr, newState));
 	for (auto const& equivalentClass : currentEquivalentStates)
@@ -154,6 +149,39 @@ DFSA<size_t, AlphaT> DFSA<StateT, AlphaT>::minimize() const
 			auto newImage = oldToNew.at(findImage(*oldStateRef, a));
 			if (isFinal(*oldStateRef)) res.addFinal(newState);
 			res.addTransition(newState, a, newImage);
+		}
+	}*/
+
+	std::unordered_map<StateT, size_t> oldToNew;
+	size_t newState = 1;
+	for (auto const& equivalentClass : currentEquivalentStates)
+	{
+		for (auto const& oldState : equivalentClass)
+		{
+			oldToNew.insert(std::make_pair(oldState, newState));
+		}
+		++newState;
+	}
+
+	res.setStart(oldToNew.at(start));
+	// What if the pointers in oldToNew are not the same as in transition?
+	for (auto const& a : alphabet)
+	{
+		for (auto const& equivalentClass : currentEquivalentStates)
+		{
+			StateT oldStateRef = equivalentClass.front();
+
+			auto newState = oldToNew.at(oldStateRef);
+			if (isFinal(oldStateRef)) res.addFinal(newState);
+			const StateT* oldImage = findImage(oldStateRef, a);
+
+			if (!oldImage) {
+				res.addTransition(newState, a, 0);
+			}
+			else {
+				auto newImage = oldToNew.at(*oldImage);
+				res.addTransition(newState, a, newImage);
+			}
 		}
 	}
 

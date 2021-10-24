@@ -14,6 +14,7 @@ private:
 	std::unordered_set<StateT> final;
 
 	const StateT* findImage(const StateT&, const AlphaT&) const;
+	bool isFinal(const StateT&) const;
 
 public:
 	void setStart(const StateT&);
