@@ -4,7 +4,7 @@ template<typename StateT, typename AlphaT>
 StateT * DFSA<StateT, AlphaT>::findImage(const StateT &q, const AlphaT &a) const
 {
 	auto possible = transitions.find(std::make_pair(q, a));
-	if (possible == transitions.end()) return NULL;
+	if (possible == transitions.end()) return nullptr;
 	StateT* res = &(possible->second);
 	return res;
 }
@@ -38,7 +38,7 @@ void DFSA<StateT, AlphaT>::addTransition(const StateT& q, const AlphaT& a, const
 template<typename StateT, typename AlphaT>
 StateT* DFSA<StateT, AlphaT>::step(const StateT & q, std::list<AlphaT>& word) const
 {
-	if (word.empty()) return NULL;
+	if (word.empty()) return nullptr;
 	StateT* res = findImage(q, word.front());
 	word.pop_front();
 	return res;
@@ -95,7 +95,7 @@ DFSA<int, AlphaT> DFSA<StateT, AlphaT>::minimize()
 
 				for (auto const& equivalentClass : newEquivalentClasses)
 				{
-					std::unordered_map<StateT, std::list<StateT>> images;
+					std::unordered_map<StateT*, std::list<StateT>> images;
 					for (auto const& state : equivalentClass)
 					{
 						std::list<StateT>& toPush = images[findImage(state, a)];
@@ -114,19 +114,43 @@ DFSA<int, AlphaT> DFSA<StateT, AlphaT>::minimize()
 
 			// If only one "new" equivalent class was created it is the old equivalent class 
 			// and will be equivalent forever
-			if (newEquivalentClasses.size() > 1) change = true;
-			else continue;
-
-			// ??? CHANGE!
-			for (auto const& newClass : eqivalentClass)
-			{
-				currentEquivalentStates.push_back(newClass);
-			}
-
+			if (newEquivalentClasses.size() == 1) continue;
+			
+			change = true;
 
 			currentEquivalentStates.insert(currentEquivalentStates.end(), 
 				newEquivalentClasses.begin(), newEquivalentClasses.end());
 			currentEquivalentStates.pop_front();
+		}
+	}
+
+	// Construct the result - for each equivalent class we have a state
+	// If the equivalent class starts with a final state, then it is final
+	DFSA<size_t, AlphaT> res;
+
+	// Map states of the old automata to states of the minimized automata
+	std::unordered_map<StateT*, size_t> oldToNew;
+	size_t newState = 1;
+	oldToNew.insert(std::make_pair(nullptr, newState));
+	for (auto const& equivalentClass : currentEquivalentStates)
+	{
+		for (auto const& oldState : equivalentClass)
+		{
+			oldToNew.insert(std::make_pair(&oldState, newState));
+		}
+		++newState;
+	}
+
+	// What if the pointers in oldToNew are not the same as in transition?
+	for (auto const& a : alphabet)
+	{
+		for (auto const& equivalentClass : currentEquivalentStates)
+		{
+			auto const& oldStateRef = equivalentClass.front();
+			auto const& newState = oldToNew.at(&oldStateRef);
+			auto const& newImage = oldToNew.at(findImage(oldStateRef, a));
+			if (isFinal(oldStateRef)) res.addFinal(newState);
+			res.addTransition(newState, a, newImage);
 		}
 	}
 
